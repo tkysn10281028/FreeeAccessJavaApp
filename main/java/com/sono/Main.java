@@ -5,15 +5,15 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.GenericApplicationContext;
 
-import com.sono.exec.ExecuteMainProc;
+import com.sono.execute.ExecuteMainProcess;
 
 @Configuration
 @ComponentScan
 public class Main {
 	public static void main(String[] args) {
 		try (GenericApplicationContext context = new AnnotationConfigApplicationContext(Main.class)) {
-			var executeMainProc = context.getBean(ExecuteMainProc.class);
-			executeMainProc.execute(args);
+			var executeMainProc = context.getBean(ExecuteMainProcess.class);
+			executeMainProc.executeMainProcess(args);
 		}
 	}
 }
