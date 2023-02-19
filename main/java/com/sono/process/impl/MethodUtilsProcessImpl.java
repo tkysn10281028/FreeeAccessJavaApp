@@ -18,7 +18,7 @@ public class MethodUtilsProcessImpl implements MainProcess {
 
 	@Override
 	public void execute(String[] parameters) {
-		executeParameters(parameters);
+		this.executeParameters(parameters);
 		methodUtilsBusinessLogic.executeMethodUtils();
 	}
 

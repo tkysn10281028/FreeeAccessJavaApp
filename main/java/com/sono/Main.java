@@ -11,6 +11,7 @@ import com.sono.execute.ExecuteMainProcess;
 @ComponentScan
 public class Main {
 	public static void main(String[] args) {
+
 		try (GenericApplicationContext context = new AnnotationConfigApplicationContext(Main.class)) {
 			var executeMainProc = context.getBean(ExecuteMainProcess.class);
 			executeMainProc.executeMainProcess(args);

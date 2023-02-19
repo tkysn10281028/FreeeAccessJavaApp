@@ -33,7 +33,7 @@ public class MainSampleProcessImpl implements MainProcess {
 	}
 
 	public ClientInfoDto convertIntoClientInfo(String[] parameters) {
-		var dto = new ClientInfoDto();
+		ClientInfoDto dto = new ClientInfoDto();
 		dto.setAuthorizationCode("AuthCode");
 		dto.setClientId("clientCode");
 		dto.setClientSecret("clientSecret");
