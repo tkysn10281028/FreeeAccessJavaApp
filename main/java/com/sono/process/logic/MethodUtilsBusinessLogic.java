@@ -498,7 +498,12 @@ public class MethodUtilsBusinessLogic implements BusinessLogic {
 	}
 
 	/**
-	 * 渡されたインデックスの2つ前の文字列をリストから取得.いない場合はそのインデックスの文字列を取得する
+	 * <pre>
+	 * 渡されたインデックスの2つ前の文字列をリストから取得.
+	 * いない場合はそのインデックスの文字列を取得する.
+	 * 戻り値の取得用.
+	 * </pre>
+	 * 
 	 * 
 	 * @param targetList
 	 * @param index
@@ -516,6 +521,12 @@ public class MethodUtilsBusinessLogic implements BusinessLogic {
 		}
 	}
 
+	/**
+	 * 渡された文字が予約語かクラス名だった場合にtrueを返却する
+	 * 
+	 * @param target
+	 * @return
+	 */
 	protected boolean judgeIsReservedWordOrClassName(String target) {
 		var reservedWords = reservedWordDto.getReservedWordList();
 		var className = classInfoDto.getClassName();
@@ -530,6 +541,12 @@ public class MethodUtilsBusinessLogic implements BusinessLogic {
 		}
 	}
 
+	/**
+	 * 丸括弧dtoの有効性判定.
+	 * 
+	 * @param dto
+	 * @return
+	 */
 	protected boolean judgeIsLeftPositionZeroOrTargetNull(LeftAndRightParenthesisDto dto) {
 		if (ObjectUtils.isEmpty(dto) || dto.getLeftParenthesisCount() == 0 || dto.getRightParenthesisCount() == 0) {
 			return true;
