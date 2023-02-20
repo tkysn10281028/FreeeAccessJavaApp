@@ -7,10 +7,12 @@ import java.util.Arrays;
 import org.junit.Test;
 
 import com.sono.process.dto.methodutils.ClassInfoDto;
+import com.sono.process.dto.methodutils.LeftAndRightParenthesisDto;
+import com.sono.process.dto.methodutils.ReservedWordDto;
 
 public class MethodUtilsBusinessLogicTest {
 	MethodUtilsBusinessLogic methodUtilsBusinessLogic = new MethodUtilsBusinessLogic();
-	private String[] array = { "try", "{", "}", "CLASSNAME(", ")", "{", "}", "if", "(", "SIG", ")", "{", "}", "for",
+	private String[] array = { "try", "{", "}", "CLASSNAME", "(", ")", "{", "}", "if", "(", "SIG", ")", "{", "}", "for",
 			"(", "SIG1,", "SIG2", ")", "{", "CONTENT", "}", "CLASSNAME", "(", "String", "SIG1,", "String", "SIG2", ")",
 			"{", "CONTENT", "}", "void", "F", "(", "String", "SIG1,", "String", "SIG2", ")", "{", "CONTENT", "}",
 			"public", "String", "G", "(", "String", "SIG1,", "String", "SIG2", ")", "{", "CONTENT", "}", "public",
@@ -19,6 +21,7 @@ public class MethodUtilsBusinessLogicTest {
 	{
 		this.methodUtilsBusinessLogic.classInfoDto = new ClassInfoDto();
 		this.methodUtilsBusinessLogic.classInfoDto.setClassName("CLASSNAME");
+		this.methodUtilsBusinessLogic.reservedWordDto = new ReservedWordDto();
 
 	}
 
@@ -150,50 +153,79 @@ public class MethodUtilsBusinessLogicTest {
 
 	@Test
 	public void testGenerateMethodName() {
-		assertNull(methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array), 1));
-		assertEquals("CLASSNAME", methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array), 6));
-		assertEquals("if", methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array), 12));
-		assertEquals("for", methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array), 19));
-		assertEquals("CLASSNAME", methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array), 27));
-		assertEquals("F", methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array), 38));
-		assertEquals("G", methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array), 50));
-		assertEquals("H", methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array), 62));
-		assertEquals("I", methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array), 73));
+		assertNull(methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(0, 0, 0, 0)));
+		assertEquals("CLASSNAME", methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(4, 5, 0, 0)));
+		assertEquals("if", methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(9, 11, 0, 0)));
+		assertEquals("for", methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(15, 18, 0, 0)));
+		assertEquals("CLASSNAME", methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(23, 28, 0, 0)));
+		assertEquals("F", methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(34, 39, 0, 0)));
+		assertEquals("G", methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(46, 51, 0, 0)));
+		assertEquals("H", methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(58, 63, 0, 0)));
+		assertEquals("I", methodUtilsBusinessLogic.generateMethodName(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(68, 73, 0, 0)));
 
 	}
 
 	@Test
 	public void testGenerateMethodSignature() {
-		assertNull(methodUtilsBusinessLogic.generateMethodSignature(Arrays.asList(this.array), 1));
-		assertNull(methodUtilsBusinessLogic.generateMethodSignature(Arrays.asList(this.array), 6));
-		assertEquals(Arrays.asList("SIG"),
-				methodUtilsBusinessLogic.generateMethodSignature(Arrays.asList(this.array), 12));
-		assertEquals(Arrays.asList("SIG", "SIG2"),
-				methodUtilsBusinessLogic.generateMethodSignature(Arrays.asList(this.array), 19));
-		assertEquals(Arrays.asList("String SIG", "String SIG2"),
-				methodUtilsBusinessLogic.generateMethodSignature(Arrays.asList(this.array), 27));
-		assertEquals(Arrays.asList("String SIG", "String SIG2"),
-				methodUtilsBusinessLogic.generateMethodSignature(Arrays.asList(this.array), 38));
-		assertEquals(Arrays.asList("String SIG", "String SIG2"),
-				methodUtilsBusinessLogic.generateMethodSignature(Arrays.asList(this.array), 50));
-		assertEquals(Arrays.asList("String SIG", "String SIG2"),
-				methodUtilsBusinessLogic.generateMethodSignature(Arrays.asList(this.array), 62));
-		assertEquals(Arrays.asList("String SIG", "String SIG2"),
-				methodUtilsBusinessLogic.generateMethodSignature(Arrays.asList(this.array), 73));
+		assertNull(methodUtilsBusinessLogic.generateMethodSignature(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(0, 0, 0, 0)));
+		assertNull(methodUtilsBusinessLogic.generateMethodSignature(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(4, 5, 0, 0)));
+		assertEquals(Arrays.asList("SIG"), methodUtilsBusinessLogic.generateMethodSignature(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(9, 11, 0, 0)));
+		assertEquals(Arrays.asList("SIG", "SIG2"), methodUtilsBusinessLogic
+				.generateMethodSignature(Arrays.asList(this.array), new LeftAndRightParenthesisDto(15, 18, 0, 0)));
+		assertEquals(Arrays.asList("String SIG", "String SIG2"), methodUtilsBusinessLogic
+				.generateMethodSignature(Arrays.asList(this.array), new LeftAndRightParenthesisDto(23, 28, 0, 0)));
+		assertEquals(Arrays.asList("String SIG", "String SIG2"), methodUtilsBusinessLogic
+				.generateMethodSignature(Arrays.asList(this.array), new LeftAndRightParenthesisDto(34, 39, 0, 0)));
+		assertEquals(Arrays.asList("String SIG", "String SIG2"), methodUtilsBusinessLogic
+				.generateMethodSignature(Arrays.asList(this.array), new LeftAndRightParenthesisDto(46, 51, 0, 0)));
+		assertEquals(Arrays.asList("String SIG", "String SIG2"), methodUtilsBusinessLogic
+				.generateMethodSignature(Arrays.asList(this.array), new LeftAndRightParenthesisDto(58, 63, 0, 0)));
+		assertEquals(Arrays.asList("String SIG", "String SIG2"), methodUtilsBusinessLogic
+				.generateMethodSignature(Arrays.asList(this.array), new LeftAndRightParenthesisDto(68, 73, 0, 0)));
 
 	}
 
 	@Test
 	public void testGenerateMethodReturnVal() {
-		assertNull(methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array), 1));
-		assertNull(methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array), 6));
-		assertNull(methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array), 12));
-		assertNull(methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array), 19));
-		assertNull(methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array), 27));
-		assertEquals("void", methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array), 38));
-		assertEquals("String", methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array), 50));
-		assertEquals("String", methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array), 62));
-		assertEquals("void", methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array), 73));
+		assertNull(methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(0, 0, 0, 0)));
+		assertNull(methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(4, 5, 0, 0)));
+		assertNull(methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(9, 11, 0, 0)));
+		assertNull(methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(15, 18, 0, 0)));
+		assertNull(methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(23, 28, 0, 0)));
+		assertEquals("void", methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(34, 39, 0, 0)));
+		assertEquals("String", methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(46, 51, 0, 0)));
+		assertEquals("String", methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(58, 63, 0, 0)));
+		assertEquals("void", methodUtilsBusinessLogic.generateMethodReturnVal(Arrays.asList(this.array),
+				new LeftAndRightParenthesisDto(68, 73, 0, 0)));
+	}
+
+	@Test
+	public void testJudgeIsReservedWordOrClassName() {
+
+		assertTrue(methodUtilsBusinessLogic.judgeIsReservedWordOrClassName("for"));
+		assertTrue(methodUtilsBusinessLogic.judgeIsReservedWordOrClassName("if"));
+		assertTrue(methodUtilsBusinessLogic.judgeIsReservedWordOrClassName("CLASSNAME"));
+
 	}
 
 }

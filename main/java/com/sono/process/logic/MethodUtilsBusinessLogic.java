@@ -7,14 +7,17 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.sono.process.dto.methodutils.ClassInfoDto;
 import com.sono.process.dto.methodutils.LeftAndRightParenthesisDto;
 import com.sono.process.dto.methodutils.MethodInfoDto;
+import com.sono.process.dto.methodutils.ReservedWordDto;
 
 /**
  * メソッドを処理するクラス。
@@ -23,6 +26,8 @@ import com.sono.process.dto.methodutils.MethodInfoDto;
  */
 @Component
 public class MethodUtilsBusinessLogic implements BusinessLogic {
+	@Autowired
+	ReservedWordDto reservedWordDto;
 	Logger logger = LoggerFactory.getLogger(MethodUtilsBusinessLogic.class);
 	protected Scanner scanner = null;
 	protected String inputWord;
@@ -155,9 +160,13 @@ public class MethodUtilsBusinessLogic implements BusinessLogic {
 			if (judgeIsRightBracket(target) == null) {
 				continue;
 			} else if (judgeIsRightBracket(target)) {
+				var parenthesisDto = generateFirstAndLastParenthesisCount(targetlist, startIndex);
 				var methodPart = generateSplitListByFromAndAfterNum(targetlist, startIndex, i);
+				var methodName = generateMethodName(targetlist, parenthesisDto);
+				var methodSignature = generateMethodSignature(targetlist, parenthesisDto);
+				var methodReturnVal = generateMethodReturnVal(targetlist, parenthesisDto);
 				methodInfoListOutput = setMethodRelatedInfoAndGenerateNewMethodList(methodInfoDto, methodInfoDtos,
-						methodPart, inputWord, targetlist, inputWord);
+						methodPart, methodName, methodSignature, methodReturnVal);
 				break;
 			} else if (!judgeIsRightBracket(target)) {
 				var resultList = generateMethodImplementsLoop(targetlist, i + 1);
@@ -320,9 +329,13 @@ public class MethodUtilsBusinessLogic implements BusinessLogic {
 	 * @return メソッド名
 	 * @see 抽象度：C
 	 */
-	protected String generateMethodName(List<String> targetlist, Integer startIndex) {
-		var leftAndRightParenthesisDto = generateFirstAndLastParenthesisCount(targetlist, startIndex);
-		var methodName = targetlist.get(leftAndRightParenthesisDto.getLeftParenthesisPosition() - 1);
+	protected String generateMethodName(List<String> targetlist,
+			LeftAndRightParenthesisDto leftAndRightParenthesisDto) {
+		if (judgeIsLeftPositionZeroOrTargetNull(leftAndRightParenthesisDto)) {
+			return null;
+		}
+		var methodName = getOnePreviousWordFromList(targetlist,
+				leftAndRightParenthesisDto.getLeftParenthesisPosition());
 
 		return methodName;
 	}
@@ -335,8 +348,18 @@ public class MethodUtilsBusinessLogic implements BusinessLogic {
 	 * @return
 	 * @see 抽象度：C
 	 */
-	protected List<String> generateMethodSignature(List<String> targetlist, Integer startIndex) {
-		return null;
+	protected List<String> generateMethodSignature(List<String> targetlist,
+			LeftAndRightParenthesisDto leftAndRightParenthesisDto) {
+		if (judgeIsLeftPositionZeroOrTargetNull(leftAndRightParenthesisDto)) {
+			return null;
+		}
+		if (judgeIsReservedWordOrClassName(
+				getOnePreviousWordFromList(targetlist, leftAndRightParenthesisDto.getLeftParenthesisPosition()))) {
+			return null;
+		}
+		var list = generateSplitListByFromAndAfterNum(targetlist, leftAndRightParenthesisDto.getLeftParenthesisCount(),
+				leftAndRightParenthesisDto.getRightParenthesisCount());
+		return Arrays.asList(String.join(" ", list).replaceAll("(", "").replaceAll(")", "").split(","));
 	}
 
 	/**
@@ -347,8 +370,16 @@ public class MethodUtilsBusinessLogic implements BusinessLogic {
 	 * @return
 	 * @see 抽象度：C
 	 */
-	protected String generateMethodReturnVal(List<String> targetlist, Integer startIndex) {
-		return "";
+	protected String generateMethodReturnVal(List<String> targetlist,
+			LeftAndRightParenthesisDto leftAndRightParenthesisDto) {
+		if (judgeIsLeftPositionZeroOrTargetNull(leftAndRightParenthesisDto)) {
+			return null;
+		}
+		if (judgeIsReservedWordOrClassName(
+				getOnePreviousWordFromList(targetlist, leftAndRightParenthesisDto.getLeftParenthesisPosition()))) {
+			return null;
+		}
+		return getTwoPreviousWordFromList(targetlist, leftAndRightParenthesisDto.getLeftParenthesisPosition());
 	}
 
 	/**
@@ -377,6 +408,12 @@ public class MethodUtilsBusinessLogic implements BusinessLogic {
 		return parenthesisCountDto;
 	}
 
+	/**
+	 * 全てのカッコの左右にスペースを付加する
+	 * 
+	 * @param parenthesisedWords
+	 * @return
+	 */
 	protected String replaceParenthesisIntoSpaced(String parenthesisedWords) {
 		var replaced1 = StringUtils.replace(parenthesisedWords, "(", " ( ");
 		var replaced2 = StringUtils.replace(replaced1, ")", " ) ");
@@ -438,6 +475,66 @@ public class MethodUtilsBusinessLogic implements BusinessLogic {
 			parenthesisDto.setLeftParenthesisPosition(presentPosition);
 		} else if (target.equals(")")) {
 			parenthesisDto.setRightParenthesisCount(parenthesisDto.getRightParenthesisCount() + 1);
+		}
+	}
+
+	/**
+	 * 渡されたインデックスの1つ前の文字列をリストから取得
+	 * 
+	 * @param targetList 取得対象文字リスト
+	 * @param index      対象インデックス
+	 * @return
+	 * @see 抽象度：D
+	 */
+	protected String getOnePreviousWordFromList(List<String> targetList, Integer index) {
+		if (targetList.size() <= 0) {
+			return null;
+		}
+		if (index == 0) {
+			return targetList.get(0);
+		} else {
+			return targetList.get(index - 1);
+		}
+	}
+
+	/**
+	 * 渡されたインデックスの2つ前の文字列をリストから取得.いない場合はそのインデックスの文字列を取得する
+	 * 
+	 * @param targetList
+	 * @param index
+	 * @return
+	 * @see 抽象度：D
+	 */
+	protected String getTwoPreviousWordFromList(List<String> targetList, Integer index) {
+		if (targetList.size() <= 0) {
+			return null;
+		}
+		if (index == 0 || index == 1) {
+			return targetList.get(index);
+		} else {
+			return targetList.get(index - 2);
+		}
+	}
+
+	protected boolean judgeIsReservedWordOrClassName(String target) {
+		var reservedWords = reservedWordDto.getReservedWordList();
+		var className = classInfoDto.getClassName();
+		if (reservedWords.size() <= 0 || StringUtils.isEmpty(className)) {
+			throw new IllegalArgumentException("Class Name Null or Reserved Words Are Empty");
+		}
+		if (reservedWords.stream().filter(word -> word.equals(target)).findAny().isPresent()
+				|| target.equals(className)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	protected boolean judgeIsLeftPositionZeroOrTargetNull(LeftAndRightParenthesisDto dto) {
+		if (ObjectUtils.isEmpty(dto) || dto.getLeftParenthesisCount() == 0 || dto.getRightParenthesisCount() == 0) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 
